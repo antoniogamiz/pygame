@@ -57,25 +57,33 @@ def main():
                 exit = True
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
+                key_pressed[0] = True
                 vx=-speed
             if event.key == pygame.K_RIGHT:
+                key_pressed[1] = True
                 vx=speed
             if event.key == pygame.K_UP:
+                key_pressed[2] = True
                 vy=-speed
             if event.key == pygame.K_DOWN:
+                key_pressed[3] = True
                 vy=speed
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
-                if key_pressed[0]: vx=speed
+                key_pressed[0] = False
+                if key_pressed[1]: vx=speed
                 else: vx=0
             if event.key == pygame.K_RIGHT:
-                if key_pressed[1]: vx=-speed
+                key_pressed[1] = False
+                if key_pressed[0]: vx=-speed
                 else: vx=0
             if event.key == pygame.K_UP:
-                if key_pressed[2]: vy=speed
+                key_pressed[2] = False
+                if key_pressed[3]: vy=speed
                 else: vy=0
             if event.key == pygame.K_DOWN:
-                if key_pressed[3]: vy=-speed
+                key_pressed[3] = False
+                if key_pressed[2]: vy=-speed
                 else: vy=0
 
         main_clock.tick(3000)
