@@ -3,6 +3,16 @@ import pygame
 import random
 from pygame.locals import *
 
+SCREEN_WIDTH=600
+SCREEN_HEIGHT=900
+
+# COLORES
+WHITE=(255,255,255)
+BLACK=(0,0,0)
+RED=(255,0,0)
+GREEN=(0,255,0)
+
+
 def load_image(filename, transparent=False):
     image = pygame.image.load(filename)
     image = image.convert()
@@ -11,6 +21,28 @@ def load_image(filename, transparent=False):
         image.set_colorkey(color, RLEACCEL)
     return image
 
+
+class Colliders(object):
+    def __init__(self, init_n):
+        self.SPEED=2
+        self.list=[]
+        for x in range(init_n):
+            # Creamos un rectángulo aleatorio.
+            l_random=random.randrange(2,SCREEN_WIDTH)
+            t_random=random.randrange(-400, -10 )
+            width = random.randrange(10, 30)
+            height = random.randrange(15, 30)
+            self.list.append(pygame.Rect(l_random, t_random, width, height))
+    def re_add(self):
+        pass
+    def add_other(self):
+        pass
+    def move(self):
+        for rec in self.list:
+            rec.move_ip(0, self.SPEED)
+    def draw(self, surface):
+        for rec in self.list:
+            pygame.draw.rect(surface, RED, rec)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, image):
@@ -28,25 +60,28 @@ class Player(pygame.sprite.Sprite):
 
 
 def main():
+    # Dimensiones de la pantalla de juego.
+
     pygame.init()
-    screen = pygame.display.set_mode([600,900])
+    screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     pygame.display.set_caption("Acnologia")
 
+    # Variables auxiliares para el control del movimiento.
     vx,vy = 0,0
     speed = 1
-
     # LEFT, RIGHT, UP, DOWN
     key_pressed = [False, False, False, False]
 
-    ship=load_image(".\\images\\ship.png")
+    # Creación del player.
+    ship=load_image(".\\images\\ship.png", True)
     player=Player(ship)
 
-    #COLORES
-    WHITE=(255,255,255)
-    BLACK=(0,0,0)
-    RED=(255,0,0)
-    GREEN=(0,255,0)
+    # Creación del fondo.
+    bg=load_image(".\\images\\background.png").convert_alpha()
+    bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
+    # Creación de los colliders del juego.
+    coll=Colliders(25)
     main_clock = pygame.time.Clock()
 
     exit= False
@@ -55,6 +90,8 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit = True
+
+        #Gestión del movimiento de 'player'.
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 key_pressed[0] = True
@@ -85,15 +122,17 @@ def main():
                 key_pressed[3] = False
                 if key_pressed[2]: vy=-speed
                 else: vy=0
+        player.move(vx,vy)
+        coll.move()
+
 
         main_clock.tick(3000)
-        player.move(vx,vy)
-        screen.fill(BLACK)
+        screen.blit(bg, (0,0))
+        coll.draw(screen)
         player.update(screen)
         
         pygame.display.update()
 
-        #player.update(screen)
 
 
     pygame.quit()
