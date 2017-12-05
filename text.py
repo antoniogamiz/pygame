@@ -12,7 +12,7 @@ BLACK=(0,0,0)
 RED=(255,0,0)
 GREEN=(0,255,0)
 
-
+# Función auxiliar para cargar imágenes (con transparencia si se quiere)
 def load_image(filename, transparent=False):
     image = pygame.image.load(filename)
     image = image.convert()
@@ -21,13 +21,22 @@ def load_image(filename, transparent=False):
         image.set_colorkey(color, RLEACCEL)
     return image
 
-
+# Genera una posicion aleatoria (l_random, t_random) y un tamaño aleatorio (width, height)
+# (l_min, l_max, t_min, t_max, w_min, w_max, h_min, h_max) son las cotas de los valores.
 def random_rect_coord_generate(l_min, l_max, t_min, t_max, w_min, w_max, h_min, h_max):
     l_random=random.randrange(l_min, l_max)
     t_random=random.randrange(t_min, t_max)
     width = random.randrange(w_min, w_max)
     height = random.randrange(h_min, h_max)
     return [l_random, t_random, width, height]
+
+
+# Detecta si 'player' colisiona con alguno de los colliders en pantalla.
+def collision_detect(player, colliders):
+    for coll in colliders.list:
+        if player.rect.colliderect(coll):
+            return True
+    return False
 
 class Colliders(object):
     def __init__(self, init_n):
