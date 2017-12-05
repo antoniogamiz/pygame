@@ -35,6 +35,9 @@ def main():
     vx,vy = 0,0
     speed = 1
 
+    # LEFT, RIGHT, UP, DOWN
+    key_pressed = [False, False, False, False]
+
     ship=load_image(".\\images\\ship.png")
     player=Player(ship)
 
@@ -63,13 +66,18 @@ def main():
                 vy=speed
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
-                vx=0
+                if key_pressed[0]: vx=speed
+                else: vx=0
             if event.key == pygame.K_RIGHT:
-                vx=0
+                if key_pressed[1]: vx=-speed
+                else: vx=0
             if event.key == pygame.K_UP:
-                vy=0
+                if key_pressed[2]: vy=speed
+                else: vy=0
             if event.key == pygame.K_DOWN:
-                vy=0
+                if key_pressed[3]: vy=-speed
+                else: vy=0
+
         main_clock.tick(3000)
         player.move(vx,vy)
         screen.fill(BLACK)
