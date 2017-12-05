@@ -19,7 +19,6 @@ def load_image(filename, transparent=False):
     image = image.convert()
     if transparent:
         color = image.get_at((0,0))
-        color = (0,255,0)
         image.set_colorkey(color, RLEACCEL)
     return image
 
@@ -63,13 +62,13 @@ class Colliders(object):
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, explosion_image, movement_sound):
         self.movement_sound=movement_sound
-        self.image=image
-        self.explosion_image=explosion_image
+        self.image=image.subsurface(270,120,400,550)
+        self.explosion_image=explosion_image.subsurface(70,115,90,60)
         self.rect=self.image.get_rect()
         self.rect.top=SCREEN_HEIGHT-200
         self.rect.left=SCREEN_WIDTH/2 - 50
-        self.image=pygame.transform.scale(self.image, (100,100))
-        self.explosion_image=pygame.transform.scale(self.explosion_image, (200,200))
+        self.image=pygame.transform.scale(self.image, (50,50))
+        self.explosion_image=pygame.transform.scale(self.explosion_image, (50,50))
     def move(self, vx, vy):
         self.rect.move_ip(vx,vy)
     def kill(self):
@@ -104,7 +103,7 @@ def main():
     player=Player(ship, explosion, movement_sound)
 
     # Creación del fondo.
-    bg=load_image(".\\images\\background.png").convert_alpha()
+    bg=load_image(".\\images\\background.jpg").convert_alpha()
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
     # Creación de los colliders del juego.
