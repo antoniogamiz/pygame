@@ -1,61 +1,70 @@
-# Importamos la librería
 import pygame
-import player
-import sys
-
-# Importamos constantes locales de pygame
+import random
 from pygame.locals import *
 
-# Iniciamos Pygame
-pygame.init()
+def main():
+    for x in range(15):
+        w=random.randrange(15, 45)
+        h=random.randrange(20,60)
+        x=random.randrange(400)
+        y=random.randrange(400)
+    pygame.init()
+    screen = pygame.display.set_mode([400,400])
+    pygame.display.set_caption("Acnologia")
 
-# Creamos una surface (la ventana de juego), asignándole un alto y un ancho
-Ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    #COLORES
+    WHITE=(255,255,255)
+    BLACK=(0,0,0)
+    RED=(255,0,0)
 
-clock = pygame.time.Clock()
+    #RectÃ¡ngulo
+    r1=pygame.Rect(50,50,45,45)
+    r2=pygame.Rect(100,100,60,40)
 
-# Le ponemos un título a la ventana
-pygame.display.set_caption("xEnderCrystalx")
+    main_clock = pygame.time.Clock()
 
-info = pygame.display.Info()
+    exit= False
+    
+    while not exit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit = True
 
-Imagen = pygame.image.load(".\images\monigotillo.png")
-transparente = Imagen.get_at((0, 0))
-Imagen.set_colorkey(transparente)
+        #Almacenamso la antigua posisicion.
+        (xant,yant)=(r1.left,r1.top)
+        #Desplazamos.
+        (r1.left,r1.top)=pygame.mouse.get_pos()
+        r1.left-=r1.width/2
+        r1.top-=r1.height/2
+        #Comprobamos si hay colisión.
+        if r1.colliderect(r2):
+            # (r1.left,r1.top)=(xant,yant)
+            r2.inflate_ip(-1,-1)
 
-MiMonigotillo = player.Monigotillo(Ventana, (300, 200), Imagen)
-# Cargamos las imágenes
-bg = pygame.image.load(".\images\\background.png")
-bg = pygame.transform.scale(bg, (info.current_w, info.current_h))
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     r1.move_ip(10,10)
+            # if event.type == pygame.KEYDOWN:
+            #     if event.key == pygame.K_LEFT:
+            #         r1.move_ip(-10,0)
+            #     if event.key == pygame.K_DOWN:
+            #         r1.move_ip(0,10)
+            #     if event.key == pygame.K_RIGHT:
+            #         r1.move_ip(10,0)
+            #     if event.key == pygame.K_UP:
+            #         r1.move_ip(0,-10)
+                    
+        main_clock.tick(3000)
+        screen.fill(WHITE)
+
+        pygame.draw.rect(screen, BLACK, r1)
+        pygame.draw.rect(screen, RED, r2)
+        pygame.display.update()
 
 
-# Bucle infinito para mantener el programa en ejecución
-while True:
+
+    pygame.quit()
 
 
-    Ventana.blit(bg, (0, 0))
-    MiMonigotillo.update(Ventana)
-    coord_x=0
-    coord_y=0
-    coord = (coord_x, coord_y)
 
 
-    for evento in pygame.event.get():
-        if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_ESCAPE:
-                sys.exit()
-            if evento.key == pygame.K_RIGHT:
-                coord_x=5
-            elif evento.key == pygame.K_DOWN:
-                coord_y=5
-            elif evento.key == pygame.K_LEFT:
-                coord_x=-5
-            elif evento.key == pygame.K_UP:
-                coord_y=-5
-            coord=(coord_x, coord_y)
-        if evento.type == pygame.KEYUP:
-                coord = (0,0)
-    MiMonigotillo.update_movement(coord)
-    pygame.display.flip()
-    clock.tick(30)
-
+main()
