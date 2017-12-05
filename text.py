@@ -22,19 +22,24 @@ def load_image(filename, transparent=False):
     return image
 
 
+def random_rect_coord_generate(l_min, l_max, t_min, t_max, w_min, w_max, h_min, h_max):
+    l_random=random.randrange(l_min, l_max)
+    t_random=random.randrange(t_min, t_max)
+    width = random.randrange(w_min, w_max)
+    height = random.randrange(h_min, h_max)
+    return [l_random, t_random, width, height]
+
 class Colliders(object):
     def __init__(self, init_n):
-        self.SPEED=2
+        self.SPEED=1
         self.list=[]
         for x in range(init_n):
             # Creamos un rectángulo aleatorio.
-            l_random=random.randrange(2,SCREEN_WIDTH)
-            t_random=random.randrange(-400, -10 )
-            width = random.randrange(10, 30)
-            height = random.randrange(15, 30)
-            self.list.append(pygame.Rect(l_random, t_random, width, height))
+            self.list.append(pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 30, 15, 35)))
     def re_add(self):
-        pass
+        for x in range(len(self.list)):
+            if self.list[x].top > SCREEN_HEIGHT:
+                self.list[x]=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 30, 15, 35))
     def add_other(self):
         pass
     def move(self):
@@ -48,8 +53,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, image):
         self.image=image
         self.rect=self.image.get_rect()
-        self.rect.top=450
-        self.rect.left=300
+        self.rect.top=SCREEN_HEIGHT-200
+        self.rect.left=SCREEN_WIDTH/2 - 50
         self.image=pygame.transform.scale(self.image, (100,100))
     def move(self, vx, vy):
         self.rect.move_ip(vx,vy)
@@ -126,11 +131,17 @@ def main():
         coll.move()
 
 
-        main_clock.tick(3000)
+        main_clock.tick(1500)
         screen.blit(bg, (0,0))
+
+        # Redibujamos los colliders.
         coll.draw(screen)
+
         player.update(screen)
         
+        # Regeneramos los colliders.
+        coll.re_add()
+
         pygame.display.update()
 
 
