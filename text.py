@@ -19,6 +19,7 @@ def load_image(filename, transparent=False):
     image = image.convert()
     if transparent:
         color = image.get_at((0,0))
+        color = (0,255,0)
         image.set_colorkey(color, RLEACCEL)
     return image
 
@@ -60,7 +61,8 @@ class Colliders(object):
             pygame.draw.rect(surface, RED, rec)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image, explosion_image):
+    def __init__(self, image, explosion_image, movement_sound):
+        self.movement_sound=movement_sound
         self.image=image
         self.explosion_image=explosion_image
         self.rect=self.image.get_rect()
@@ -72,6 +74,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.move_ip(vx,vy)
     def kill(self):
         self.image = self.explosion_image
+    def movement_play(self):
+        self.movement_sound.play()
     def update(self, surface):
         surface.blit(self.image, self.rect)
 
@@ -84,6 +88,10 @@ def main():
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     pygame.display.set_caption("Acnologia")
 
+    # Cargamos la música de fondo.
+    pygame.mixer.music.load(".\\music\\background_music.mp3")
+    movement_sound=pygame.mixer.Sound(".\\music\\movement_sound.wav")
+
     # Variables auxiliares para el control del movimiento.
     vx,vy = 0,0
     speed = 1
@@ -93,20 +101,24 @@ def main():
     # Creación del player.
     explosion=load_image(".\\images\\explosion.png", True)
     ship=load_image(".\\images\\ship.png", True)
-    player=Player(ship, explosion)
+    player=Player(ship, explosion, movement_sound)
 
     # Creación del fondo.
     bg=load_image(".\\images\\background.png").convert_alpha()
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
     # Creación de los colliders del juego.
-    coll=Colliders(25)
+    coll=Colliders(5)
     main_clock = pygame.time.Clock()
 
 
     GAMEOVER = False
     exit= False
     
+    # Reproducimos la música de fondo.
+    pygame.mixer.music.play(2)
+    pygame.mixer.music.set_volume(0.1)
+
     while not exit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -117,6 +129,7 @@ def main():
                 if event.key == pygame.K_LEFT:
                     key_pressed[0] = True
                     vx=-speed
+                    
                 if event.key == pygame.K_RIGHT:
                     key_pressed[1] = True
                     vx=speed
@@ -126,6 +139,7 @@ def main():
                 if event.key == pygame.K_DOWN:
                     key_pressed[3] = True
                     vy=speed
+                player.movement_play()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     key_pressed[0] = False
@@ -148,6 +162,7 @@ def main():
             if collision_detect(player, coll):
                 GAMEOVER=True
                 player.kill()
+                pygame.mixer.music.stop()
 
 
         main_clock.tick(1500)
