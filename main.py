@@ -10,6 +10,8 @@ from pygame.locals import *
 SCREEN_WIDTH=600
 SCREEN_HEIGHT=900
 
+# Tiempo límite.
+LIMIT_TIME=60
 
 # Tamaño de la fuente.
 FONT_SIZE = 40
@@ -29,7 +31,10 @@ def main():
 
     # Cargamos la música de fondo.
     pygame.mixer.music.load(".\\music\\background_music.mp3")
-    movement_sound.set_volume(SOUND_VOLUME)
+    
+    # Reproducimos la música de fondo.
+    pygame.mixer.music.play(1) # La duración máxima de la partida es 1 minuto, así que con 1 loop es suficiente.
+    pygame.mixer.music.set_volume(SOUND_VOLUME)
 
     # Variables auxiliares para el control del movimiento.
     vx,vy = 0,0
@@ -43,7 +48,7 @@ def main():
         print("Número de parámetros incorrecto. Help: python main.py <username>")
         return 1
     else:
-        player=ctrl.Player(sys.argv[1],ship, explosion, movement_sound, 1)
+        player=ctrl.Player(sys.argv[1],ship, explosion, 1)
 
     # Creamos la barra de vida.
     heart_image=ctrl.load_image(".\\images\\hearts.png", True)
@@ -73,13 +78,6 @@ def main():
     # Creamos el gameover
     gameover = ctrl.GameOver(screen, player, default_font)
 
-
-    # Reproducimos la música de fondo.
-    pygame.mixer.music.play(1) # La duración máxima de la partida es 1 minuto, así que con 1 loop es suficiente.
-    pygame.mixer.music.set_volume(SOUND_VOLUME)
-
-
-
     while not exit:
         for event in pygame.event.get():
             # Cierre del juego.
@@ -90,7 +88,8 @@ def main():
                     sys.exit()
         if not hearts.GAMEOVER:
             # Actualizamos el tiempo de juego mientras el jugador no haya perdido.
-            time = default_font.render("Time: "+str(int(pygame.time.get_ticks()/1000)), 0, (255,0,0))
+            time_=int(pygame.time.get_ticks()/1000)
+            time = default_font.render("Time: "+str(LIMIT_TIME-time_), 0, (255,0,0))
             #Gestión del movimiento de 'player'.
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
@@ -129,7 +128,9 @@ def main():
             if ctrl.collision_detect(player, coll, mark, hearts):
                 if hearts.GAMEOVER:
                     gameover.kill(player, mark.mark)
-
+            # Tiempo límite.
+            if time_ > LIMIT_TIME:
+                gameover.kill(player, mark.mark)
 
         main_clock.tick(1500)
 

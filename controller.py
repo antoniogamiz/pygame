@@ -120,10 +120,9 @@ class Colliders(object):
 
 # Se encarga de crear al jugador, gestionar su movimiento, y de reproducir un sonido cuando se mueve.
 class Player(pygame.sprite.Sprite):
-    def __init__(self, username, image, explosion_image, movement_sound, SPEED):
+    def __init__(self, username, image, explosion_image, SPEED):
         self.username=username
         self.SPEED=SPEED
-        self.movement_sound=movement_sound  
         self.image=image.subsurface(270,120,400,550)
         self.explosion_image=explosion_image.subsurface(70,115,90,60)
         self.image=pygame.transform.scale(self.image, (50,50))
