@@ -15,7 +15,7 @@ SCREEN_HEIGHT=900
 FONT_SIZE = 40
 
 # Volumen de los sonidos.
-SOUND_VOLUME=0.0
+SOUND_VOLUME=0.1
 
 # Dificutlad
 ENEMIES=15
@@ -25,11 +25,10 @@ def main():
 
     pygame.init()
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
-    pygame.display.set_caption("Acnologia")
+    pygame.display.set_caption("Naves Espaciales")
 
     # Cargamos la música de fondo.
     pygame.mixer.music.load(".\\music\\background_music.mp3")
-    movement_sound=pygame.mixer.Sound(".\\music\\movement_sound.wav")
     movement_sound.set_volume(SOUND_VOLUME)
 
     # Variables auxiliares para el control del movimiento.
@@ -37,7 +36,7 @@ def main():
     # LEFT, RIGHT, UP, DOWN
     key_pressed = [False, False, False, False]
 
-    # Creación del player.
+    # Creamos a 'player' (Se le pasa como argumento al archivo un nombre de usuario, si no se le pasa, finaliza la ejecución)
     explosion=ctrl.load_image(".\\images\\explosion.png", True)
     ship=ctrl.load_image(".\\images\\ship.png", True)
     if len(sys.argv) != 2:
@@ -46,38 +45,44 @@ def main():
     else:
         player=ctrl.Player(sys.argv[1],ship, explosion, movement_sound, 1)
 
-    # Creación de los corazones de la vida.
+    # Creamos la barra de vida.
     heart_image=ctrl.load_image(".\\images\\hearts.png", True)
     hearts=ctrl.HeartController(heart_image)
 
-    # Creación del fondo.
+    # Creamos el fondo.
     bg=ctrl.load_image(".\\images\\background.jpg").convert_alpha()
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
-    # Creación de los colliders del juego.
+    # Creamos los objetos móviles del juego (enemigos y no-enemigos).
     meteorite=ctrl.load_image(".\\images\\meteorite.png", True)
     points=ctrl.load_image(".\\images\\points.jpg", True)
     coll=ctrl.Colliders(meteorite, points, ENEMIES, POINTS)
+
+    # Iniciamos el reloj.
     main_clock = pygame.time.Clock()
 
 
-    # Creamos la fuente de texto del juego.
+    # Creamos una fuente de texto para el juego.
     default_font = pygame.font.Font(None, FONT_SIZE)
 
     # Creamos la puntuación.
     mark = ctrl.MarkController(default_font)
+
     exit= False
     
     # Creamos el gameover
     gameover = ctrl.GameOver(screen, player, default_font)
+
+
     # Reproducimos la música de fondo.
-    pygame.mixer.music.play(2)
+    pygame.mixer.music.play(1) # La duración máxima de la partida es 1 minuto, así que con 1 loop es suficiente.
     pygame.mixer.music.set_volume(SOUND_VOLUME)
 
 
 
     while not exit:
         for event in pygame.event.get():
+            # Cierre del juego.
             if event.type == pygame.QUIT:
                 exit = True
             if event.type == pygame.KEYDOWN:
@@ -117,25 +122,30 @@ def main():
                     key_pressed[3] = False
                     if key_pressed[2]: vy=-player.SPEED
                     else: vy=0
+            # Movemos a player y a los objetos móviles.
             player.move(vx,vy)
             coll.move()
+            # Comprobámos las colisiones.
             if ctrl.collision_detect(player, coll, mark, hearts):
                 if hearts.GAMEOVER:
                     gameover.kill(player, mark.mark)
 
 
         main_clock.tick(1500)
+
+        # Fijamos el fondo.
         screen.blit(bg, (0,0))
 
         # Redibujamos los colliders.
         coll.draw(screen)
 
+        # Actualizamos los objetos en pantalla.
         player.update(screen)
         hearts.update(screen)
         mark.update(screen, hearts.GAMEOVER)                            
         gameover.update(screen)
         
-        # Regeneramos los colliders.
+        # Regeneramos los objetos móviles.
         coll.re_add()
 
         # Hacemos blit del texto que muestra el tiempo de juego.
