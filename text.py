@@ -1,6 +1,7 @@
 
 import pygame
 import random
+import sys
 from pygame.locals import *
 
 # Dimensiones de la pantalla de juego.
@@ -176,6 +177,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit()
         if not hearts.GAMEOVER:
             # Actualizamos el tiempo de juego mientras el jugador no haya perdido.
             time = default_font.render("Time: "+str(int(pygame.time.get_ticks()/1000)), 0, (255,0,0))
