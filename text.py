@@ -19,6 +19,9 @@ FONT_SIZE = 40
 # Volumen de los sonidos.
 SOUND_VOLUME=0.0
 
+# Control de juego
+GAMEOVER = False
+
 # Función auxiliar para cargar imágenes (con transparencia si se quiere)
 def load_image(filename, transparent=False):
     image = pygame.image.load(filename)
@@ -56,6 +59,7 @@ class Colliders(object):
         for x in range(len(self.list)):
             if self.list[x].top > SCREEN_HEIGHT:
                 self.list[x]=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15))
+
     def add_other(self):
         pass
     def move(self):
@@ -85,7 +89,33 @@ class Player(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
 
+class HeartController(pygame.sprite.Sprite):
+    def __init__(self, image):
+        # self.damage_sound=damage_sound
+        self.image=pygame.transform.scale(image,(25,25))
+        self.hearts=[]
+        self.rects=[]
+        self.ticks=0
+        self.hurt=False
+        self.CURRENT_LIFE=10
+        for x in range(self.CURRENT_LIFE):
+            self.hearts.append(self.image)
+            self.rects.append([130+x*25, 0, 25, 25])
+    def kill(self):
+        if not self.hurt:
+            self.hurt=True
+            self.ticks=pygame.time.get_ticks()
+            if self.CURRENT_LIFE > 0:
+                self.CURRENT_LIFE= self.CURRENT_LIFE - 1
+            if self.CURRENT_LIFE == 0:
+                GAMEOVER = True
 
+    def update(self, surface):
+        if self.hurt:
+            if pygame.time.get_ticks() - self.ticks > 500:
+                self.hurt=False
+        for x in range(self.CURRENT_LIFE):
+            surface.blit(self.hearts[x], self.rects[x])
 
 def main():
 
@@ -109,6 +139,10 @@ def main():
     ship=load_image(".\\images\\ship.png", True)
     player=Player(ship, explosion, movement_sound)
 
+    # Creación de los corazones de la vida.
+    heart_image=load_image(".\\images\\hearts.png", True)
+    hearts=HeartController(heart_image)
+
     # Creación del fondo.
     bg=load_image(".\\images\\background.jpg").convert_alpha()
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -121,7 +155,6 @@ def main():
     # Mostramos el tiempo que se lleva jugando.
     default_font = pygame.font.Font(None, FONT_SIZE)
 
-    GAMEOVER = False
     exit= False
     
     # Reproducimos la música de fondo.
@@ -171,9 +204,10 @@ def main():
             player.move(vx,vy)
             coll.move()
             if collision_detect(player, coll):
-                GAMEOVER=True
-                player.kill()
-                pygame.mixer.music.stop()
+                hearts.kill()
+                if GAMEOVER:
+                    player.kill()
+                    pygame.mixer.music.stop()
 
 
         main_clock.tick(1500)
@@ -183,6 +217,7 @@ def main():
         coll.draw(screen)
 
         player.update(screen)
+        hearts.update(screen)
         
         # Regeneramos los colliders.
         coll.re_add()
