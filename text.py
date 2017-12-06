@@ -19,9 +19,6 @@ FONT_SIZE = 40
 # Volumen de los sonidos.
 SOUND_VOLUME=0.0
 
-# Control de juego
-GAMEOVER = False
-
 # Función auxiliar para cargar imágenes (con transparencia si se quiere)
 def load_image(filename, transparent=False):
     image = pygame.image.load(filename)
@@ -98,6 +95,7 @@ class HeartController(pygame.sprite.Sprite):
         self.ticks=0
         self.hurt=False
         self.CURRENT_LIFE=10
+        self.GAMEOVER=False
         for x in range(self.CURRENT_LIFE):
             self.hearts.append(self.image)
             self.rects.append([130+x*25, 0, 25, 25])
@@ -108,7 +106,7 @@ class HeartController(pygame.sprite.Sprite):
             if self.CURRENT_LIFE > 0:
                 self.CURRENT_LIFE= self.CURRENT_LIFE - 1
             if self.CURRENT_LIFE == 0:
-                GAMEOVER = True
+                self.GAMEOVER = True
 
     def update(self, surface):
         if self.hurt:
@@ -165,7 +163,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit = True
-        if not GAMEOVER:
+        if not hearts.GAMEOVER:
             # Actualizamos el tiempo de juego mientras el jugador no haya perdido.
             time = default_font.render("Time: "+str(int(pygame.time.get_ticks()/1000)), 0, (255,0,0))
             #Gestión del movimiento de 'player'.
@@ -205,7 +203,7 @@ def main():
             coll.move()
             if collision_detect(player, coll):
                 hearts.kill()
-                if GAMEOVER:
+                if hearts.GAMEOVER:
                     player.kill()
                     pygame.mixer.music.stop()
 
