@@ -10,6 +10,7 @@ from pygame.locals import *
 SCREEN_WIDTH=600
 SCREEN_HEIGHT=900
 
+
 # Tamaño de la fuente.
 FONT_SIZE = 40
 
@@ -19,139 +20,6 @@ SOUND_VOLUME=0.0
 # Dificutlad
 ENEMIES=15
 POINTS=5
-
-# Función auxiliar para cargar imágenes (con transparencia si se quiere)
-def load_image(filename, transparent=False):
-    image = pygame.image.load(filename)
-    image = image.convert()
-    if transparent:
-        color = image.get_at((0,0))
-        image.set_colorkey(color, RLEACCEL)
-    return image
-
-# Genera una posicion aleatoria (l_random, t_random) y un tamaño aleatorio (width, height)
-# (l_min, l_max, t_min, t_max, w_min, w_max, h_min, h_max) son las cotas de los valores.
-def random_rect_coord_generate(l_min, l_max, t_min, t_max, w_min, w_max, h_min, h_max):
-    l_random=random.randrange(l_min, l_max)
-    t_random=random.randrange(t_min, t_max)
-    width = random.randrange(w_min, w_max)
-    height = random.randrange(h_min, h_max)
-    return [l_random, t_random, width, height]
-
-
-# Detecta si 'player' colisiona con alguno de los colliders en pantalla.
-def collision_detect(player, colliders, mark, heart):
-    for ent in colliders.list:
-        if player.rect.colliderect(ent.rect):
-            ent.touched=True
-            if ent.enemy:
-                heart.kill()
-            else:
-                mark.up()
-            return True
-    return False
-
-class Entity(pygame.sprite.Sprite):
-    def __init__(self, image, rect, enemy, touched):
-        self.image=pygame.transform.scale(image, (50,50))
-        self.rect=rect
-        self.enemy=enemy
-        self.touched=touched
-
-class Colliders(object):
-    def __init__(self, enemy_image, points_image, enemy_num, points_num):
-        self.SPEED=1
-        self.list=[]
-        for x in range(enemy_num):
-            self.list.append(Entity(enemy_image, pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 49, 50, 49, 50)), True, False))
-        for x in range(points_num):
-            self.list.append(Entity(points_image, pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 49, 50, 49, 50)), False, False))
-    def re_add(self):
-        for x in range(len(self.list)):
-            if self.list[x].rect.top > SCREEN_HEIGHT:
-                self.list[x].rect=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20,49, 50, 49, 50))
-                self.list[x].touched=False
-    def move(self):
-        for ent in self.list:
-            ent.rect.move_ip(0, self.SPEED)
-    def draw(self, surface):
-        for ent in self.list:
-            if not ent.touched:
-                surface.blit(ent.image, ent.rect)
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, username, image, explosion_image, movement_sound, SPEED):
-        self.username=username
-        self.SPEED=SPEED
-        self.movement_sound=movement_sound
-        self.image=image.subsurface(270,120,400,550)
-        self.explosion_image=explosion_image.subsurface(70,115,90,60)
-        self.image=pygame.transform.scale(self.image, (50,50))
-        self.rect=self.image.get_rect()
-        self.rect.top=SCREEN_HEIGHT-200
-        self.rect.left=SCREEN_WIDTH/2 - 50
-        self.explosion_image=pygame.transform.scale(self.explosion_image, (50,50))
-    def move(self, vx, vy):
-        self.rect.move_ip(vx,vy)
-    def kill(self):
-        self.image = self.explosion_image
-    def movement_play(self):
-        self.movement_sound.play()
-    def update(self, surface):
-        surface.blit(self.image, self.rect)
-
-
-class HeartController(pygame.sprite.Sprite):
-    def __init__(self, image):
-        # self.damage_sound=damage_sound
-        self.image=pygame.transform.scale(image,(25,25))
-        self.hearts=[]
-        self.rects=[]
-        self.ticks=0
-        self.hurt=False
-        self.CURRENT_LIFE=3
-        self.GAMEOVER=False
-        for x in range(self.CURRENT_LIFE):
-            self.hearts.append(self.image)
-            self.rects.append([130+x*25, 0, 25, 25])
-    def kill(self):
-        if not self.hurt:
-            self.hurt=True
-            self.ticks=pygame.time.get_ticks()
-            if self.CURRENT_LIFE > 0:
-                self.CURRENT_LIFE= self.CURRENT_LIFE - 1
-            if self.CURRENT_LIFE == 0:
-                self.GAMEOVER = True
-
-    def update(self, surface):
-        if self.hurt:
-            if pygame.time.get_ticks() - self.ticks > 500:
-                self.hurt=False
-        for x in range(self.CURRENT_LIFE):
-            surface.blit(self.hearts[x], self.rects[x])
-
-class MarkController:
-    def __init__(self, font):
-        self.font=font
-        self.mark=0
-        self.points=0
-        self.touch=False
-    def up(self):
-        if not self.touch:
-            self.touch=True
-            self.ticks=pygame.time.get_ticks()
-            self.points=self.points+50
-    def update(self,surface, gameover):
-        if self.touch:
-            if pygame.time.get_ticks() - self.ticks > 500:
-                self.touch=False
-        if gameover:
-            k=str(self.mark)
-        else:
-            k=int(pygame.time.get_ticks()/1000)
-            k=str(k+self.points)
-            self.mark=k
-        surface.blit(self.font.render("Mark: "+k, 0, (255,0,0)), (425,0)) 
 
 def main():
 
@@ -170,26 +38,26 @@ def main():
     key_pressed = [False, False, False, False]
 
     # Creación del player.
-    explosion=load_image(".\\images\\explosion.png", True)
-    ship=load_image(".\\images\\ship.png", True)
+    explosion=ctrl.load_image(".\\images\\explosion.png", True)
+    ship=ctrl.load_image(".\\images\\ship.png", True)
     if len(sys.argv) != 2:
         print("Número de parámetros incorrecto. Help: python main.py <username>")
         return 1
     else:
-        player=Player(sys.argv[1],ship, explosion, movement_sound, 1)
+        player=ctrl.Player(sys.argv[1],ship, explosion, movement_sound, 1)
 
     # Creación de los corazones de la vida.
-    heart_image=load_image(".\\images\\hearts.png", True)
-    hearts=HeartController(heart_image)
+    heart_image=ctrl.load_image(".\\images\\hearts.png", True)
+    hearts=ctrl.HeartController(heart_image)
 
     # Creación del fondo.
-    bg=load_image(".\\images\\background.jpg").convert_alpha()
+    bg=ctrl.load_image(".\\images\\background.jpg").convert_alpha()
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
     # Creación de los colliders del juego.
-    meteorite=load_image(".\\images\\meteorite.png", True)
-    points=load_image(".\\images\\points.jpg", True)
-    coll=Colliders(meteorite, points, ENEMIES, POINTS)
+    meteorite=ctrl.load_image(".\\images\\meteorite.png", True)
+    points=ctrl.load_image(".\\images\\points.jpg", True)
+    coll=ctrl.Colliders(meteorite, points, ENEMIES, POINTS)
     main_clock = pygame.time.Clock()
 
 
@@ -197,7 +65,7 @@ def main():
     default_font = pygame.font.Font(None, FONT_SIZE)
 
     # Creamos la puntuación.
-    mark = MarkController(default_font)
+    mark = ctrl.MarkController(default_font)
     exit= False
     
     # Creamos el gameover
@@ -251,7 +119,7 @@ def main():
                     else: vy=0
             player.move(vx,vy)
             coll.move()
-            if collision_detect(player, coll, mark, hearts):
+            if ctrl.collision_detect(player, coll, mark, hearts):
                 if hearts.GAMEOVER:
                     gameover.kill(player, mark.mark)
 
