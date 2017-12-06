@@ -27,7 +27,7 @@ def main():
 
     pygame.init()
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
-    pygame.display.set_caption("Naves Espaciales")
+    pygame.display.set_caption("Space Ships")
 
     # Cargamos la música de fondo.
     pygame.mixer.music.load(".\\music\\background_music.mp3")
