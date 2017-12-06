@@ -41,7 +41,8 @@ def random_rect_coord_generate(l_min, l_max, t_min, t_max, w_min, w_max, h_min, 
 # Detecta si 'player' colisiona con alguno de los colliders en pantalla.
 def collision_detect(player, colliders):
     for coll in colliders.list:
-        if player.rect.colliderect(coll):
+        if player.rect.colliderect(coll[0]):
+            coll[1]=True
             return True
     return False
 
@@ -51,20 +52,19 @@ class Colliders(object):
         self.list=[]
         for x in range(init_n):
             # Creamos un rectángulo aleatorio.
-            self.list.append(pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15)))
+            self.list.append([pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15)), False])
     def re_add(self):
         for x in range(len(self.list)):
-            if self.list[x].top > SCREEN_HEIGHT:
-                self.list[x]=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15))
-
-    def add_other(self):
-        pass
+            if self.list[x][0].top > SCREEN_HEIGHT:
+                self.list[x][0]=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15))
+                self.list[x][1]=False
     def move(self):
         for rec in self.list:
-            rec.move_ip(0, self.SPEED)
+            rec[0].move_ip(0, self.SPEED)
     def draw(self, surface):
         for rec in self.list:
-            pygame.draw.rect(surface, RED, rec)
+            if not rec[1]:
+                pygame.draw.rect(surface, RED, rec[0])
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, explosion_image, movement_sound):
@@ -118,8 +118,13 @@ class HeartController(pygame.sprite.Sprite):
 class MarkController:
     def __init__(self, font):
         self.font=font
-    def update(self,surface):
-        surface.blit(self.font.render("Mark: "+str(int(pygame.time.get_ticks()/1000)), 0, (255,0,0)), (425,0)) 
+    def update(self,surface, gameover):
+        if gameover:
+            k=str(self.mark)
+        else:
+            k=str(int(pygame.time.get_ticks()/1000))
+            self.mark=k
+        surface.blit(self.font.render("Mark: "+k, 0, (255,0,0)), (425,0)) 
 
 def main():
 
@@ -224,8 +229,7 @@ def main():
 
         player.update(screen)
         hearts.update(screen)
-        mark.update(screen)
-        
+        mark.update(screen, hearts.GAMEOVER)                            
         # Regeneramos los colliders.
         coll.re_add()
 
