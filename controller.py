@@ -87,8 +87,8 @@ class Entity(pygame.sprite.Sprite):
 
 # Gestiona el movimiento, la colisión y el re-spawn de los objetos que se mueven por pantalla.
 class Colliders(object):
-    def __init__(self, enemy_image, points_image, enemy_num, points_num):
-        self.SPEED=1    # Velocidad a la que se mueven los objetos.
+    def __init__(self, enemy_image, points_image, enemy_num, points_num, SPEED):
+        self.SPEED=SPEED    # Velocidad a la que se mueven los objetos.
         self.list=[]    # Aquí se almacenan todos los objetos móviles de la pantalla (excepto player)
         for x in range(enemy_num):  # Creamos los enemigos.
             tupla=random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20)

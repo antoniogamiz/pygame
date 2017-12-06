@@ -48,7 +48,7 @@ def main():
         print("Número de parámetros incorrecto. Help: python main.py <username>")
         return 1
     else:
-        player=ctrl.Player(sys.argv[1],ship, explosion, 1)
+        player=ctrl.Player(sys.argv[1],ship, explosion, 5)
 
     # Creamos la barra de vida.
     heart_image=ctrl.load_image(".\\images\\hearts.png", True)
@@ -61,7 +61,7 @@ def main():
     # Creamos los objetos móviles del juego (enemigos y no-enemigos).
     meteorite=ctrl.load_image(".\\images\\meteorite.png", True)
     points=ctrl.load_image(".\\images\\points.jpg", True)
-    coll=ctrl.Colliders(meteorite, points, ENEMIES, POINTS)
+    coll=ctrl.Colliders(meteorite, points, ENEMIES, POINTS, 5)
 
     # Iniciamos el reloj.
     main_clock = pygame.time.Clock()
@@ -132,7 +132,7 @@ def main():
             if time_ > LIMIT_TIME:
                 gameover.kill(player, mark.mark)
 
-        main_clock.tick(1500)
+        main_clock.tick(60)
 
         # Fijamos el fondo.
         screen.blit(bg, (0,0))
