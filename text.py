@@ -2,6 +2,7 @@
 import pygame
 import random
 import sys
+import csv
 from pygame.locals import *
 
 # Dimensiones de la pantalla de juego.
@@ -19,6 +20,23 @@ FONT_SIZE = 40
 
 # Volumen de los sonidos.
 SOUND_VOLUME=0.0
+
+# Dificutlad
+ENEMIES=15
+POINTS=5
+
+
+def mark_table(surface, entry):
+    
+
+#Función que gestiona el gameover.
+def gameover(surface, player):
+    player.kill()
+    pygame.mixer.music.stop()
+    with open('.\\data\\marks.csv') as csv_file:
+        entry=csv.reader(csv_file)
+        entry=list(entry)
+    mark_table(surface, entry)
 
 # Función auxiliar para cargar imágenes (con transparencia si se quiere)
 def load_image(filename, transparent=False):
@@ -40,35 +58,48 @@ def random_rect_coord_generate(l_min, l_max, t_min, t_max, w_min, w_max, h_min, 
 
 
 # Detecta si 'player' colisiona con alguno de los colliders en pantalla.
-def collision_detect(player, colliders):
-    for coll in colliders.list:
-        if player.rect.colliderect(coll[0]):
-            coll[1]=True
+def collision_detect(player, colliders, mark, heart):
+    for ent in colliders.list:
+        if player.rect.colliderect(ent.rect):
+            ent.touched=True
+            if ent.enemy:
+                heart.kill()
+            else:
+                mark.up()
             return True
     return False
 
+class Entity(pygame.sprite.Sprite):
+    def __init__(self, image, rect, enemy, touched):
+        self.image=pygame.transform.scale(image, (50,50))
+        self.rect=rect
+        self.enemy=enemy
+        self.touched=touched
+
 class Colliders(object):
-    def __init__(self, init_n):
+    def __init__(self, enemy_image, points_image, enemy_num, points_num):
         self.SPEED=1
         self.list=[]
-        for x in range(init_n):
-            # Creamos un rectángulo aleatorio.
-            self.list.append([pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15)), False])
+        for x in range(enemy_num):
+            self.list.append(Entity(enemy_image, pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 49, 50, 49, 50)), True, False))
+        for x in range(points_num):
+            self.list.append(Entity(points_image, pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 49, 50, 49, 50)), False, False))
     def re_add(self):
         for x in range(len(self.list)):
-            if self.list[x][0].top > SCREEN_HEIGHT:
-                self.list[x][0]=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20, 10, 15, 10, 15))
-                self.list[x][1]=False
+            if self.list[x].rect.top > SCREEN_HEIGHT:
+                self.list[x].rect=pygame.Rect(random_rect_coord_generate(2, SCREEN_WIDTH, -400, -20,49, 50, 49, 50))
+                self.list[x].touched=False
     def move(self):
-        for rec in self.list:
-            rec[0].move_ip(0, self.SPEED)
+        for ent in self.list:
+            ent.rect.move_ip(0, self.SPEED)
     def draw(self, surface):
-        for rec in self.list:
-            if not rec[1]:
-                pygame.draw.rect(surface, RED, rec[0])
+        for ent in self.list:
+            if not ent.touched:
+                surface.blit(ent.image, ent.rect)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image, explosion_image, movement_sound):
+    def __init__(self, image, explosion_image, movement_sound, SPEED):
+        self.SPEED=SPEED
         self.movement_sound=movement_sound
         self.image=image.subsurface(270,120,400,550)
         self.explosion_image=explosion_image.subsurface(70,115,90,60)
@@ -95,7 +126,7 @@ class HeartController(pygame.sprite.Sprite):
         self.rects=[]
         self.ticks=0
         self.hurt=False
-        self.CURRENT_LIFE=10
+        self.CURRENT_LIFE=3
         self.GAMEOVER=False
         for x in range(self.CURRENT_LIFE):
             self.hearts.append(self.image)
@@ -119,11 +150,23 @@ class HeartController(pygame.sprite.Sprite):
 class MarkController:
     def __init__(self, font):
         self.font=font
+        self.mark=0
+        self.points=0
+        self.touch=False
+    def up(self):
+        if not self.touch:
+            self.touch=True
+            self.ticks=pygame.time.get_ticks()
+            self.points=self.points+50
     def update(self,surface, gameover):
+        if self.touch:
+            if pygame.time.get_ticks() - self.ticks > 500:
+                self.touch=False
         if gameover:
             k=str(self.mark)
         else:
-            k=str(int(pygame.time.get_ticks()/1000))
+            k=int(pygame.time.get_ticks()/1000)
+            k=str(k+self.points)
             self.mark=k
         surface.blit(self.font.render("Mark: "+k, 0, (255,0,0)), (425,0)) 
 
@@ -140,14 +183,13 @@ def main():
 
     # Variables auxiliares para el control del movimiento.
     vx,vy = 0,0
-    speed = 1
     # LEFT, RIGHT, UP, DOWN
     key_pressed = [False, False, False, False]
 
     # Creación del player.
     explosion=load_image(".\\images\\explosion.png", True)
     ship=load_image(".\\images\\ship.png", True)
-    player=Player(ship, explosion, movement_sound)
+    player=Player(ship, explosion, movement_sound, 1)
 
     # Creación de los corazones de la vida.
     heart_image=load_image(".\\images\\hearts.png", True)
@@ -158,7 +200,9 @@ def main():
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
     # Creación de los colliders del juego.
-    coll=Colliders(10)
+    meteorite=load_image(".\\images\\meteorite.png", True)
+    points=load_image(".\\images\\points.jpg", True)
+    coll=Colliders(meteorite, points, ENEMIES, POINTS)
     main_clock = pygame.time.Clock()
 
 
@@ -172,6 +216,8 @@ def main():
     # Reproducimos la música de fondo.
     pygame.mixer.music.play(2)
     pygame.mixer.music.set_volume(SOUND_VOLUME)
+
+
 
     while not exit:
         for event in pygame.event.get():
@@ -187,42 +233,38 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     key_pressed[0] = True
-                    vx=-speed
-                    
+                    vx=-player.SPEED
                 if event.key == pygame.K_RIGHT:
                     key_pressed[1] = True
-                    vx=speed
+                    vx=player.SPEED
                 if event.key == pygame.K_UP:
                     key_pressed[2] = True
-                    vy=-speed
+                    vy=-player.SPEED
                 if event.key == pygame.K_DOWN:
                     key_pressed[3] = True
-                    vy=speed
-                player.movement_play()
+                    vy=player.SPEED
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     key_pressed[0] = False
-                    if key_pressed[1]: vx=speed
+                    if key_pressed[1]: vx=player.SPEED
                     else: vx=0
                 if event.key == pygame.K_RIGHT:
                     key_pressed[1] = False
-                    if key_pressed[0]: vx=-speed
+                    if key_pressed[0]: vx=-player.SPEED
                     else: vx=0
                 if event.key == pygame.K_UP:
                     key_pressed[2] = False
-                    if key_pressed[3]: vy=speed
+                    if key_pressed[3]: vy=player.SPEED
                     else: vy=0
                 if event.key == pygame.K_DOWN:
                     key_pressed[3] = False
-                    if key_pressed[2]: vy=-speed
+                    if key_pressed[2]: vy=-player.SPEED
                     else: vy=0
             player.move(vx,vy)
             coll.move()
-            if collision_detect(player, coll):
-                hearts.kill()
+            if collision_detect(player, coll, mark, hearts):
                 if hearts.GAMEOVER:
-                    player.kill()
-                    pygame.mixer.music.stop()
+                    gameover(screen, player)
 
 
         main_clock.tick(1500)
