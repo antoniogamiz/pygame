@@ -8,7 +8,7 @@ Juego creado para el curso de Python avanzado del ceprud (Universidad de Granada
 
 * Requerimientos: 
     * Versión de Ubuntu no muy vieja (superior 11.10)
-    * Si juegas en Windows, tendrás que cambiar las rutas de los archivos, remplezando los "/" por "\\".
+    * Si juegas en Windows, tendrás que cambiar las rutas de los archivos, remplezando los "/" por "\\\".
     * Darle estrellita al repositorio :D.
 
 * Comentarios: 
