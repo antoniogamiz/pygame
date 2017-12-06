@@ -26,18 +26,38 @@ ENEMIES=15
 POINTS=5
 
 
-def mark_table(surface, entry):
-    
+class GameOver:
+    def __init__(self,surface, player, font):
+        self.font=font
+        self.GAMEOVER=False
+        with open('.\\data\\marks.csv') as csv_file:
+            entry=csv.reader(csv_file)
+            self.entry=list(entry)
+        self.players=[]
+        self.players.append(self.font.render("GAMEOVER", 0, (255,0,0)))
+    def kill(self,player, username, mark):
+        self.GAMEOVER=True
+        player.kill()
+        pygame.mixer.music.stop()
+        self.calculateRank(username, mark)
+        out_csv = open('.\\data\\marks.csv', 'w', newline='')
+        out = csv.writer(out_csv)
+        out.writerows(self.entry)
+        del out
+        out_csv.close()
 
-#Función que gestiona el gameover.
-def gameover(surface, player):
-    player.kill()
-    pygame.mixer.music.stop()
-    with open('.\\data\\marks.csv') as csv_file:
-        entry=csv.reader(csv_file)
-        entry=list(entry)
-    mark_table(surface, entry)
-
+    def calculateRank(self, username, mark):
+        for x in range(5):
+            if int(mark) > int(self.entry[x][1]):
+                self.entry.pop(x)
+                self.entry.insert(x, [username, mark])
+                break
+        for x in range(5):
+            self.players.append(self.font.render(self.entry[x][0]+"     "+str(self.entry[x][1]), 0, (255,0,0)))
+    def update(self, surface):
+        if self.GAMEOVER:
+            for x in range(6):
+                surface.blit(self.players[x], (SCREEN_WIDTH/3,SCREEN_HEIGHT/3+x*30))
 # Función auxiliar para cargar imágenes (con transparencia si se quiere)
 def load_image(filename, transparent=False):
     image = pygame.image.load(filename)
@@ -213,6 +233,8 @@ def main():
     mark = MarkController(default_font)
     exit= False
     
+    # Creamos el gameover
+    gameover = GameOver(screen, player, default_font)
     # Reproducimos la música de fondo.
     pygame.mixer.music.play(2)
     pygame.mixer.music.set_volume(SOUND_VOLUME)
@@ -264,7 +286,7 @@ def main():
             coll.move()
             if collision_detect(player, coll, mark, hearts):
                 if hearts.GAMEOVER:
-                    gameover(screen, player)
+                    gameover.kill(player, "doidjw", 200)
 
 
         main_clock.tick(1500)
@@ -276,6 +298,8 @@ def main():
         player.update(screen)
         hearts.update(screen)
         mark.update(screen, hearts.GAMEOVER)                            
+        gameover.update(screen)
+        
         # Regeneramos los colliders.
         coll.re_add()
 
