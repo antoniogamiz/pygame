@@ -115,6 +115,12 @@ class HeartController(pygame.sprite.Sprite):
         for x in range(self.CURRENT_LIFE):
             surface.blit(self.hearts[x], self.rects[x])
 
+class MarkController:
+    def __init__(self, font):
+        self.font=font
+    def update(self,surface):
+        surface.blit(self.font.render("Mark: "+str(int(pygame.time.get_ticks()/1000)), 0, (255,0,0)), (425,0)) 
+
 def main():
 
     pygame.init()
@@ -150,9 +156,11 @@ def main():
     main_clock = pygame.time.Clock()
 
 
-    # Mostramos el tiempo que se lleva jugando.
+    # Creamos la fuente de texto del juego.
     default_font = pygame.font.Font(None, FONT_SIZE)
 
+    # Creamos la puntuación.
+    mark = MarkController(default_font)
     exit= False
     
     # Reproducimos la música de fondo.
@@ -216,6 +224,7 @@ def main():
 
         player.update(screen)
         hearts.update(screen)
+        mark.update(screen)
         
         # Regeneramos los colliders.
         coll.re_add()
