@@ -3,6 +3,7 @@ import pygame
 import random
 import sys
 import csv
+import utilities as ut
 from pygame.locals import *
 
 # Dimensiones de la pantalla de juego.
@@ -35,11 +36,11 @@ class GameOver:
             self.entry=list(entry)
         self.players=[]
         self.players.append(self.font.render("GAMEOVER", 0, (255,0,0)))
-    def kill(self,player, username, mark):
+    def kill(self,player, mark):
         self.GAMEOVER=True
         player.kill()
         pygame.mixer.music.stop()
-        self.calculateRank(username, mark)
+        self.calculateRank(player.username, mark)
         out_csv = open('.\\data\\marks.csv', 'w', newline='')
         out = csv.writer(out_csv)
         out.writerows(self.entry)
@@ -118,7 +119,8 @@ class Colliders(object):
                 surface.blit(ent.image, ent.rect)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image, explosion_image, movement_sound, SPEED):
+    def __init__(self, username, image, explosion_image, movement_sound, SPEED):
+        self.username=username
         self.SPEED=SPEED
         self.movement_sound=movement_sound
         self.image=image.subsurface(270,120,400,550)
@@ -209,7 +211,11 @@ def main():
     # Creación del player.
     explosion=load_image(".\\images\\explosion.png", True)
     ship=load_image(".\\images\\ship.png", True)
-    player=Player(ship, explosion, movement_sound, 1)
+    if len(sys.argv) != 2:
+        print("Número de parámetros incorrecto. Help: python main.py <username>")
+        return 1
+    else:
+        player=Player(sys.argv[1],ship, explosion, movement_sound, 1)
 
     # Creación de los corazones de la vida.
     heart_image=load_image(".\\images\\hearts.png", True)
@@ -286,7 +292,7 @@ def main():
             coll.move()
             if collision_detect(player, coll, mark, hearts):
                 if hearts.GAMEOVER:
-                    gameover.kill(player, "doidjw", 200)
+                    gameover.kill(player, mark.mark)
 
 
         main_clock.tick(1500)
