@@ -3,18 +3,12 @@ import pygame
 import random
 import sys
 import csv
-import utilities as ut
+import controller as ctrl
 from pygame.locals import *
 
 # Dimensiones de la pantalla de juego.
 SCREEN_WIDTH=600
 SCREEN_HEIGHT=900
-
-# COLORES
-WHITE=(255,255,255)
-BLACK=(0,0,0)
-RED=(255,0,0)
-GREEN=(0,255,0)
 
 # Tamaño de la fuente.
 FONT_SIZE = 40
@@ -26,39 +20,6 @@ SOUND_VOLUME=0.0
 ENEMIES=15
 POINTS=5
 
-
-class GameOver:
-    def __init__(self,surface, player, font):
-        self.font=font
-        self.GAMEOVER=False
-        with open('.\\data\\marks.csv') as csv_file:
-            entry=csv.reader(csv_file)
-            self.entry=list(entry)
-        self.players=[]
-        self.players.append(self.font.render("GAMEOVER", 0, (255,0,0)))
-    def kill(self,player, mark):
-        self.GAMEOVER=True
-        player.kill()
-        pygame.mixer.music.stop()
-        self.calculateRank(player.username, mark)
-        out_csv = open('.\\data\\marks.csv', 'w', newline='')
-        out = csv.writer(out_csv)
-        out.writerows(self.entry)
-        del out
-        out_csv.close()
-
-    def calculateRank(self, username, mark):
-        for x in range(5):
-            if int(mark) > int(self.entry[x][1]):
-                self.entry.pop(x)
-                self.entry.insert(x, [username, mark])
-                break
-        for x in range(5):
-            self.players.append(self.font.render(self.entry[x][0]+"     "+str(self.entry[x][1]), 0, (255,0,0)))
-    def update(self, surface):
-        if self.GAMEOVER:
-            for x in range(6):
-                surface.blit(self.players[x], (SCREEN_WIDTH/3,SCREEN_HEIGHT/3+x*30))
 # Función auxiliar para cargar imágenes (con transparencia si se quiere)
 def load_image(filename, transparent=False):
     image = pygame.image.load(filename)
@@ -240,7 +201,7 @@ def main():
     exit= False
     
     # Creamos el gameover
-    gameover = GameOver(screen, player, default_font)
+    gameover = ctrl.GameOver(screen, player, default_font)
     # Reproducimos la música de fondo.
     pygame.mixer.music.play(2)
     pygame.mixer.music.set_volume(SOUND_VOLUME)
