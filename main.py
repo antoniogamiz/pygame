@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import pygame
 import random
 import sys
@@ -30,7 +30,7 @@ def main():
     pygame.display.set_caption("Space Ships")
 
     # Cargamos la música de fondo.
-    pygame.mixer.music.load(".\\music\\background_music.mp3")
+    pygame.mixer.music.load("./music/background_music.mp3")
     
     # Reproducimos la música de fondo.
     pygame.mixer.music.play(1) # La duración máxima de la partida es 1 minuto, así que con 1 loop es suficiente.
@@ -42,8 +42,8 @@ def main():
     key_pressed = [False, False, False, False]
 
     # Creamos a 'player' (Se le pasa como argumento al archivo un nombre de usuario, si no se le pasa, finaliza la ejecución)
-    explosion=ctrl.load_image(".\\images\\explosion.png", True)
-    ship=ctrl.load_image(".\\images\\ship.png", True)
+    explosion=ctrl.load_image("./images/explosion.png", True)
+    ship=ctrl.load_image("./images/ship.png", True)
     if len(sys.argv) != 2:
         print("Número de parámetros incorrecto. Help: python main.py <username>")
         return 1
@@ -51,7 +51,7 @@ def main():
         player=ctrl.Player(sys.argv[1],ship, explosion, 5)
 
     # Creamos la barra de vida.
-    heart_image=ctrl.load_image(".\\images\\hearts.png", True)
+    heart_image=ctrl.load_image("./images/hearts.png", True)
     hearts=ctrl.HeartController(heart_image)
 
     # Creamos el fondo.
@@ -59,8 +59,8 @@ def main():
     bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 
     # Creamos los objetos móviles del juego (enemigos y no-enemigos).
-    meteorite=ctrl.load_image(".\\images\\meteorite.png", True)
-    points=ctrl.load_image(".\\images\\points.jpg", True)
+    meteorite=ctrl.load_image("./images/meteorite.png", True)
+    points=ctrl.load_image("./images/points.jpg", True)
     coll=ctrl.Colliders(meteorite, points, ENEMIES, POINTS, 5)
 
     # Iniciamos el reloj.

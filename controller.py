@@ -34,7 +34,7 @@ class GameOver:
     def __init__(self,surface, player, font):
         self.font=font
         self.GAMEOVER=False
-        with open('.\\data\\marks.csv') as csv_file:    # En el archivo marks.csv guardamos el ranking en formato csv.
+        with open('./data/marks.csv') as csv_file:    # En el archivo marks.csv guardamos el ranking en formato csv.
             entry=csv.reader(csv_file)
             self.entry=list(entry)
         self.players=[]
@@ -45,7 +45,7 @@ class GameOver:
         player.kill()
         pygame.mixer.music.stop()
         self.calculateRank(player.username, mark)   # Actualizamos el ranking.
-        out_csv = open('.\\data\\marks.csv', 'w', newline='')
+        out_csv = open('./data/marks.csv', 'w', newline='')
         out = csv.writer(out_csv)
         out.writerows(self.entry)   # Y lo escribimos.
         del out
